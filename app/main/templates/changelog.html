@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block title %}Changelog{% endblock %} {% block
+content %}
+<style>
+  /* === CHANGELOG THEME VARIABLES === */
+  :root {
+    --cl-bg: #ffffff;
+    --cl-surface: #ffffff;
+    --cl-radius: 14px;
+    --cl-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+    --cl-padding: 24px;
+    --cl-width: 95%;
+  }
+
+  /* === STAGE: occupies available space inside .main === */
+  .changelog-stage {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    height: 100%; /* anchor to parent height */
+    overflow: hidden; /* prevent stage from growing */
+  }
+
+  /* === CARD: fixed within stage === */
+  .changelog-card {
+    width: var(--cl-width);
+    background: var(--cl-surface);
+    border-radius: var(--cl-radius);
+    box-shadow: var(--cl-shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* === BODY: only this scrolls === */
+  .changelog-body {
+    flex: 1;
+    padding: var(--cl-padding);
+    overflow-y: auto; /* single clean scroll zone */
+  }
+
+  /* Typography inside */
+  .changelog-body .markdown-body {
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+</style>
+<div class="changelog-stage">
+  <div class="changelog-card">
+    <div class="changelog-body">
+      <article class="markdown-body">{{ changelog_html|safe }}</article>
+    </div>
+  </div>
+</div>
+{% endblock %}

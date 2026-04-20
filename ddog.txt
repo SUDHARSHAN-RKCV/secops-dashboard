@@ -1,0 +1,111 @@
+
+// RUM Integration via js
+
+// ensure the user table has a column "id" of type UUID v4 as all mappings are based on uuid under GDPR Complainace **no user name , email, initials will be allowed**
+
+/* add below to all html files 
+<script src="https://www.datadoghq-browser-agent.com/eu1/v5/datadog-rum.js"></script>
+<script src="/static/js/datadog-rum.js"></script>
+<script>
+  window.APP_USER = {
+    id: "{{ current_user.id }}",
+  };
+</script>
+*/ 
+
+
+//--------------------------------
+//datadog-rum.js
+//--------------------------------
+
+(function () {
+  if (!window.DD_RUM) {
+    console.warn('Datadog RUM SDK not loaded');
+    return;
+  }
+
+  /* ========================
+     RUM INITIALIZATION
+     ======================== */
+  window.DD_RUM.init({
+    applicationId: '123456',
+    clientToken: 'abcd',
+    site: 'datadoghq.eu',
+    service: 'Dashboard',
+    env: 'PROD',
+    version: '3.0.0',
+
+    sessionSampleRate: 100,
+    
+    trackUserInteractions: true,
+    trackResources: true,
+    trackLongTasks: true,
+
+    defaultPrivacyLevel: 'mask-user-input',
+  });
+
+  /* ========================
+     USER CONTEXT (OPTIONAL)
+     Set from HTML or inline JS
+     ======================== */
+  if (window.APP_USER && window.APP_USER.id) {
+    window.DD_RUM.setUser({
+      id: window.APP_USER.id
+    });
+  }
+
+  /* ========================
+     IDLE SESSION HANDLING
+     ======================== */
+  let idleTimer;
+  const IDLE_TIMEOUT = 5 * 60 * 1000; // 5 min
+
+  function endIdleSession() {
+    if (!window.DD_RUM) return;
+
+    console.log('Datadog RUM: idle timeout, new session');
+
+    DD_RUM.clearUser();
+    DD_RUM.startNewSession();
+  }
+
+  function resetIdleTimer() {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(endIdleSession, IDLE_TIMEOUT);
+  }
+
+  ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(event =>
+    document.addEventListener(event, resetIdleTimer, { passive: true })
+  );
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') {
+      DD_RUM.addAction('tab_changed or closed', { path: location.pathname });
+    }
+  });
+
+  resetIdleTimer();
+})();
+-----------------------------------------------------------------------------------------
+[Unit]
+Description=VERTEX
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/opt/secops-dashboard/
+
+Environment="PATH=/opt/secops-dashboard/venv/bin"
+ExecStart=/opt/secops-dashboard/venv/bin/gunicorn \
+          --workers 3 \
+          --bind 0.0.0.0:443 \
+          --certfile /opt/ssl-certs/chain.crt \
+          --keyfile /opt/ssl-certs/scipher.secops.com.key \
+          wsgi:app
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

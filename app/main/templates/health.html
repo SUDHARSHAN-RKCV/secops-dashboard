@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{app_name}} Health</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 40px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            max-width: 500px;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .ok {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .unknown {
+            color: gray;
+        }
+        button {
+            margin-top: 20px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 4px;
+            background-color: #2b6cb0;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1e4e8c;
+        }
+    </style>
+</head>
+<body>
+
+<h1>{{app_name}} Health Dashboard</h1>
+
+<div class="card">
+    <div id="health-data">Checking health...</div>
+    <button onclick="checkHealth()">Refresh</button>
+</div>
+
+<script>
+    async function checkHealth() {
+        const container = document.getElementById("health-data");
+        container.textContent = "Checking health...";
+
+        try {
+            const response = await fetch("/health_api");
+            const data = await response.json();
+
+            let html = "";
+            for (const key in data) {
+                let value = data[key];
+                let cssClass = "unknown";
+
+                if (value === "ok" || value === "alive") {
+                    cssClass = "ok";
+                } else if (value === "error") {
+                    cssClass = "error";
+                }
+
+                html += `<p>${key}: <span class="status ${cssClass}">${value}</span></p>`;
+            }
+
+            container.innerHTML = html;
+
+        } catch (error) {
+            container.innerHTML = `<p class="error">Health check failed</p>`;
+        }
+    }
+
+    // Run on page load
+    checkHealth();
+</script>
+
+</body>
+</html>

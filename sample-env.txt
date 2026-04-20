@@ -1,0 +1,26 @@
+# app credentials and configurations
+APP_NAME=Scipher Guardz
+APP_VERSION=2.9.20226
+
+MAINTENANCE_MODE=false
+MAINTENANCE_WINDOW=2026-02-13T00:00:00+05:30/2026-02-15T21:56:00+05:30
+
+SUPPORT_EMAIL=Scipher.Support@Vestas.com
+session_secret_key=your-secret-key
+
+# db credentials and configurations
+#postgres
+
+#POSTGRES_URI=postgresql://sdnch:sdnch@scipher-ops-database.postgres.database.azure.com:5432/postgres #azure db
+
+POSTGRES_URI=postgresql://postgres:passq123@localhost/postgres #loacal test db- test
+POSTGRES_local_URI=postgresql://postgres:passq123@localhost/postgres #local db -fallback
+
+schema_name=secops_db
+
+DASHBOARD_URLS=[{"title": "WAF Dashboard", "url": "https://p.datadoghq.eu/sb/402b5da2-15d8-11f0-8706-aa9dc95432a3-a192aa6ac7b77091311fd34267071d9f"}]   
+
+
+# API credentials and configurations
+DOMAIN = utopusinsights.com,scipher.io
+SSC_API_KEY=D3vbxdN0aaw2pe2YM4YHVwmuBuSM

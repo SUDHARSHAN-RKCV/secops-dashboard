@@ -1,0 +1,49 @@
+{% extends "base.html" %} {% block title %}Dashboard - Scipher Gx {% endblock %}
+{% block content %}
+<div class="container-fluid mt-5 px-5">
+  {% if dashboards %}
+  <div class="accordion" id="dashboardAccordion">
+    {% for dash in dashboards %}
+    <div class="accordion-item mb-4 shadow-sm rounded border">
+      <h2 class="accordion-header" id="heading{{ loop.index }}">
+        <button
+          class="accordion-button bg-primary text-white collapsed"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapse{{ loop.index }}"
+          aria-expanded="false"
+          aria-controls="collapse{{ loop.index }}"
+        >
+          {{ dash.title }}
+        </button>
+      </h2>
+      <div
+        id="collapse{{ loop.index }}"
+        class="accordion-collapse collapse"
+        aria-labelledby="heading{{ loop.index }}"
+        data-bs-parent="#dashboardAccordion"
+      >
+        <div class="accordion-body p-0">
+          <iframe
+            loading="lazy"
+            src="{{ dash.url }}"
+            title="{{ dash.title }}"
+            style="
+              width: 100%;
+              height: 35vh;
+              border: none;
+              border-radius: 0 0 8px 8px;
+            "
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="alert alert-warning">No dashboards are currently configured.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,119 @@
+<!-- app/main/templates/user/login.html -->
+<!DOCTYPE html>
+<html lang="en" xml:lang="en">
+  <head>
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-blue-50 flex items-center justify-center min-h-screen">
+    <div
+      class="w-full max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-md"
+    >
+      <div class="flex justify-center mb-6">
+        <img
+          alt="Scipher Gaurd"
+          class="w-full h-auto rounded"
+          src="/static/logos/sci-x.jpg"
+        />
+      </div>
+      <h2 class="text-2xl font-bold text-center mb-2">Log in</h2>
+      <div class="flex justify-center mb-6"></div>
+      <form method="POST">
+        <div class="mb-4">
+          <label class="block text-gray-700 text-sm font-bold mb-2" for="login">
+            Email
+            <span class="text-red-500"> * </span>
+          </label>
+          <input
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            id="login"
+            name="email"
+            required
+            type="text"
+          />
+        </div>
+        <div class="mb-6">
+          <label
+            class="block text-gray-700 text-sm font-bold mb-2"
+            for="password"
+          >
+            Password
+            <span class="text-red-500"> * </span>
+          </label>
+          <div class="relative">
+            <input
+              class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              id="password"
+              name="password"
+              required
+              type="password"
+            />
+            <div
+              class="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+            >
+              <i class="fas fa-eye cursor-pointer" id="togglePassword"> </i>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center justify-between">
+          <div class="flex justify-between items-center mb-4">
+            <a
+              class="text-sm text-gray-600 hover:text-gray-800"
+              href="/"
+              id="goBack"
+              >Go back 🏡</a
+            >
+          </div>
+
+          <button
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            type="submit"
+          >
+            Log in
+          </button>
+        </div>
+
+        {% with messages = get_flashed_messages() %} {% if messages %}
+        <div class="mt-4 space-y-2">
+          {% for message in messages %}
+          <div
+            class="flash-message bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative transition-opacity duration-500"
+          >
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %} {% endwith %}
+      </form>
+    </div>
+
+    <script>
+      const togglePassword = document.querySelector("#togglePassword");
+      const password = document.querySelector("#password");
+      togglePassword.addEventListener("click", function () {
+        const type =
+          password.getAttribute("type") === "password" ? "text" : "password";
+        password.setAttribute("type", type);
+        this.classList.toggle("fa-eye-slash");
+      });
+
+      const goBack = document.querySelector("#goBack");
+      goBack.addEventListener("click", function (e) {
+        e.preventDefault();
+        window.location.href = "/";
+      });
+
+      // Auto-dismiss flash messages after 3 seconds
+      setTimeout(() => {
+        document.querySelectorAll(".flash-message").forEach((el) => {
+          el.classList.add("opacity-0");
+          setTimeout(() => el.remove(), 500); // Allow transition to complete
+        });
+      }, 3000);
+    </script>
+  </body>
+</html>

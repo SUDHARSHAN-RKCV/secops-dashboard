@@ -1,0 +1,190 @@
+/* ================================================================
+   style.css  —  Scipher Gaurdz component styles
+   (layout + shell tokens live in base.html <style>)
+   ================================================================ */
+
+/* ── Page body ─────────────────────────────────────────────────────── */
+body {
+  background-color: #947dca;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+/* ── Modals ─────────────────────────────────────────────────────── */
+.modal-content{
+  background-color : #ffffff !important;
+  color: #212127 !important;}
+
+/* ── Cards ─────────────────────────────────────────────────────────── */
+.card {
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.39);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;          /* hidden avoids double scrollbars */
+  background: #fff;
+  border: none;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(128, 5, 210, 0.37);
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.card-header {
+  border-top-left-radius: 16px !important;
+  border-top-right-radius: 16px !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0.85rem 1rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+  font-size: 0.95rem;
+  color: #555;
+}
+.bs-btn-bg{ color:#6147b0;}
+/* ── "Last updated" badge inside card headers ─────────────────────── */
+.last-updated {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+
+/* ── Accomplished Activities card ──────────────────────────────────── */
+.accomplished-card .card-body {
+  max-height: 45vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+}
+
+.accomplished-card .card-body::-webkit-scrollbar { width: 8px; }
+.accomplished-card .card-body::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 120, 180, 0.5);
+  border-radius: 6px;
+}
+
+
+/* ── VAPT card ──────────────────────────────────────────────────────── */
+.vapt-title { white-space: nowrap; }
+
+/* Scrollable image container */
+.vapt-dynamic-wrapper {
+  max-height: 420px;
+  min-height: 250px;
+  overflow: auto;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.05);
+  scroll-behavior: smooth;
+  scrollbar-width: auto;
+  scrollbar-color: rgba(111, 111, 159, 0.41) rgba(0, 0, 0, 0.15);
+}
+
+.vapt-dynamic-wrapper::-webkit-scrollbar        { width: 10px; height: 10px; }
+.vapt-dynamic-wrapper::-webkit-scrollbar-thumb  { background-color: rgba(120, 120, 180, 0.53); border-radius: 6px; }
+.vapt-dynamic-wrapper::-webkit-scrollbar-track  { background: rgba(133, 132, 132, 0.27); }
+
+/* Scale the image up slightly and let the wrapper scroll */
+.vapt-dynamic-wrapper img {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: auto;
+  min-height: 30px;
+  transform: scale(1.25);
+  transform-origin: top left;
+}
+
+
+/* ── Dashboard cards ────────────────────────────────────────────────── */
+.dashboard-card .card-body {
+  min-height: 200px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+
+/* ── Changelog card ─────────────────────────────────────────────────── */
+.changelog-card .card-body {
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+
+/* ── Buttons ────────────────────────────────────────────────────────── */
+.btn-custom {
+  display: inline-block;
+  background-color: #0066cc;
+  color: #fff;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  text-decoration: none;
+  border: none;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+.btn-custom:hover {
+  background-color: #004999;
+  transform: scale(1.04);
+  color: #fff;
+}
+
+
+/* ── Tables ─────────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 400px;
+}
+
+th, td {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+}
+
+th {
+  text-align: center;
+  background-color: #f4f4f4;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.dashboard-table td { text-align: left; }
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Task list (Accomplished Activities) ─────────────────────────────── */
+.task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.task-list li {
+  background-color: #e6f4ea;
+  border-left: 5px solid #28a745;
+  margin-bottom: 8px;
+  padding: 9px 14px;
+  border-radius: 6px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.task-list li:hover { background-color: #d4edda; }
+
+.task-list .checkmark {
+  color: #28a745;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}

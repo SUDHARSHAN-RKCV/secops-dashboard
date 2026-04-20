@@ -1,0 +1,175 @@
+{% extends "base.html" %} {% import "macros/table_macros.html" as tbl %} {%
+block title %}SSC Report{% endblock %} {% block content %}
+
+<!-- Style block added here -->
+<style>
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 992px) {
+    .card-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .score-card {
+    background: linear-gradient(135deg, #00a8cc, #2e74c4ff);
+    color: #fff;
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+
+  .score-card .card-body {
+    padding: 1.25rem;
+  }
+
+  .score-card h5,
+  .score-card div,
+  .score-card table,
+  .score-card p,
+  .score-card td,
+  .score-card th {
+    color: #000000ff;
+  }
+
+  .score-card .badge {
+    background-color: rgba(255, 255, 255, 0.3);
+    color: #fff;
+  }
+
+  .score-card .btn-light {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #005f73;
+    font-weight: 500;
+  }
+
+  .score-card .btn-light:hover {
+    background-color: #ffffff;
+    color: #007c91;
+  }
+
+  .issue-table th {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .issue-table td.text-danger {
+    color: #ff6b6b !important;
+  }
+
+  .issue-table td.text-warning {
+    color: #ffd166 !important;
+  }
+
+  .issue-table td.text-muted {
+    color: #d3d3d3 !important;
+  }
+  .sticky-banner {
+    position: sticky;
+    top: 0;
+    z-index: 1050;
+
+    color: #fff;
+    padding: 0.75rem 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+</style>
+<div class="sticky-banner">Security Score Card - {{ domain|capitalize }}</div>
+<div class="card-grid">
+  {% for entry in entries %}
+  <div class="score-card card mb-4">
+    <div class="card-body">
+      <div
+        class="score-header d-flex justify-content-between align-items-start"
+      >
+        <div>
+          <h5 class="mb-1">
+            {{ entry.name | default('Unknown Factor') | replace('_', ' ') |
+            title }}
+          </h5>
+          <div>Score: {{ entry.score | default('N/A') }}</div>
+        </div>
+
+        <div class="text-end">
+          {% if entry.grade_url %}
+          <img src="{{ entry.grade_url }}" height="32" alt="Grade" />
+          {% else %}
+          <span class="badge">No Grade</span>
+          {% endif %}
+          <br />
+          <button
+            class="toggle-btn btn btn-sm btn-light mt-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapse-{{ loop.index }}"
+            aria-expanded="false"
+            aria-controls="collapse-{{ loop.index }}"
+            id="btn-{{ loop.index }}"
+          >
+            Details
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="collapse mt-3"
+        id="collapse-{{ loop.index }}"
+        aria-labelledby="btn-{{ loop.index }}"
+      >
+        <div class="score-body">
+          {% if entry.issue_summary|default([])|length > 0 %}
+          <div class="table-responsive">
+            <table class="issue-table table table-sm table-bordered">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>Count</th>
+                  <th>Severity</th>
+                  <th>Impact</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for issue in entry.issue_summary %}
+                <tr>
+                  <td>{{ issue.type | default('N/A') | upper }}</td>
+                  <td>{{ issue.count | default(0) | round(0, 'floor') }}</td>
+                  <td
+                    class="{% if issue.severity == 'high' %}text-danger{% elif issue.severity == 'medium' %}text-warning{% else %}text-muted{% endif %}"
+                  >
+                    {{ issue.severity | default('Unknown') | capitalize }}
+                  </td>
+                  <td>
+                    {{ issue.total_score_impact | default(0) | round(1) }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <p class="text-light">No issues reported for this factor.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info w-100">
+    No factors available for this domain.
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

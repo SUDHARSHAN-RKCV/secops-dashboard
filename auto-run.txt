@@ -1,0 +1,51 @@
+sudo setcap 'cap_net_bind_service=+ep' /opt/secops-dash/venv/bin/python3
+
+getcap /opt/secops-dash/venv/bin/python
+
+vim /opt/secops-dash/SecopsDashboard.sh
+
+    #!/bin/bash
+
+    LOGDIR="/var/log/secops-dash"
+    DATE=$(date +"%d%m%y")
+    LOGFILE="${LOGDIR}/${DATE}-secops-dash.log"
+
+    mkdir -p "$LOGDIR"
+
+    
+    exec /opt/secops-dash/venv/bin/python3 /opt/secops-dash/run.py >> "$LOGFILE" 2>&1
+
+sudo chmod +x /opt/secops-dash/SecopsDashboard.sh
+
+
+#test before sysd
+/opt/secops-dash/SecopsDashboard.sh  #terminal1
+
+tail -n 30 /var/log/secops-dash/$(date +"%d%m%y")-SecopsDashboard.log #terminal2
+
+vim /etc/systemd/system/secops-dash.service
+
+    [Unit]
+    Description=secops-dashboard (HTTPS on 443)
+    After=network.target
+
+    [Service]
+    Type=simple
+    User=sdnch
+    WorkingDirectory=/opt/secops-dash
+    Environment=PYTHONUNBUFFERED=1
+    ExecStart=/opt/secops-dash/SecopsDashboard.sh
+    Restart=always
+    RestartSec=5
+
+    [Install]
+    WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+sudo systemctl restart secops-dash
+sudo systemctl status secops-dash
+
+ls /var/log/secops-dash
+tail -n 30 /var/log/secops-dash/$(date +"%d%m%y")-secops-dash.log
+
+sudo lsof -i:443

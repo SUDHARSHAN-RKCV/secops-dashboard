@@ -1,0 +1,455 @@
+<!-- app/main/templates/user/UM.html -->
+{% extends "base.html" %} {% block content %}
+<body data-role="{{ current_user.role }}">
+  <div class="container mt-5">
+    <h2 class="mb-4">User Management</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-3">
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show">
+              {{ message }}
+              
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <!-- Create User Button (Admin Only) -->
+    <div class="mb-3 text-end admin-only">
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#createUserModal"
+      >
+        Add User
+      </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-3">
+      <form method="GET" action="{{ url_for('main.user_management') }}">
+        <div class="row mb-3">
+          <div class="col-md-5">
+            <input
+              type="text"
+              name="search"
+              class="form-control"
+              placeholder="Search by email, role, user ID"
+              value="{{ request.args.get('search', '') }}"
+            />
+          </div>
+      
+          <div class="col-md-4">
+            <select name="role" class="form-select">
+              <option value="">Filter by Role</option>
+              <option value="SRE" {{ 'selected' if request.args.get('role')=='SRE' else '' }}>SRE</option>
+              <option value="Manager" {{ 'selected' if request.args.get('role')=='Manager' else '' }}>Manager</option>
+              <option value="ADMIN" {{ 'selected' if request.args.get('role')=='ADMIN' else '' }}>ADMIN</option>
+            </select>
+          </div>
+      
+          <div class="col-md-3">
+            <button class="btn btn-primary w-100">Search</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- User Table -->
+    <table class="table table-bordered table-striped">
+      <thead class="table-light">
+        <tr>
+          <th>User ID</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Created At</th>
+          <th>Last Updated On</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="userBody">
+        {% for user in users %}
+        <tr
+          data-id="{{ user.user_id }}"
+          data-email="{{ user.email }}"
+          data-role="{{ user.role }}"
+          data-active="{{ 'true' if user.is_active else 'false' }}"
+          data-permission="{{ user.file_permission or 'none' }}"
+        >
+          <td>{{ user.user_id }}</td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.role|upper }}</td>
+          <td>{{ user.user_created_on.strftime('%d-%b-%Y IST') }}</td>
+          <td>
+            {{ user.last_modified_on.strftime('%d-%b-%Y IST') if
+            user.last_modified_on else '' }}
+          </td>
+          <td class="text-{{ 'success' if user.is_active else 'danger' }}">
+            {{ 'Active' if user.is_active else 'Disabled' }}
+          </td>
+          <td>
+            <div class="admin-only d-flex flex-wrap gap-1">
+              <button
+                class="btn btn-sm btn-warning"
+                onclick="openEditModal(this)"
+              >
+                Edit
+              </button>
+              <form
+                method="POST"
+                action="{{ url_for('main.delete_user', user_id=user.user_id) }}"
+                onsubmit="return confirm('Are you sure?');"
+              >
+                <button class="btn btn-sm btn-danger" type="submit" {% if user.role | upper == 'ADMIN' %}disabled title="Admin users cannot be deleted"{% endif %}>
+                  Delete
+                </button>
+              </form>
+              <button
+                class="btn btn-sm btn-info"
+                onclick="openResetModal(this)"
+              >
+                Reset Password
+              </button>
+              <form
+                method="POST"
+                action="{{ url_for('main.toggle_user_status', user_id=user.user_id) }}"
+              >
+                <button class="btn btn-sm btn-secondary" type="submit" {% if user.role | upper == 'ADMIN' %}disabled title="Admin users cannot be deleted"{% endif %}>
+                  {{ 'Disable' if user.is_active else 'Enable' }}
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <nav aria-label="User pagination">
+      <ul class="pagination justify-content-center">
+    
+        {% if pagination.has_prev %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ url_for('main.user_management',
+                              page=pagination.prev_num,
+                              search=request.args.get('search'),
+                              role=request.args.get('role')) }}">
+             Previous
+          </a>
+        </li>
+        {% endif %}
+    
+        <li class="page-item disabled">
+          <span class="page-link">
+            Page {{ pagination.page }} of {{ pagination.pages }}
+          </span>
+        </li>
+    
+        {% if pagination.has_next %}
+        <li class="page-item">
+          <a class="page-link"
+             href="{{ url_for('main.user_management',
+                              page=pagination.next_num,
+                              search=request.args.get('search'),
+                              role=request.args.get('role')) }}">
+             Next
+          </a>
+        </li>
+        {% endif %}
+    
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Create User Modal -->
+  <div
+    class="modal fade admin-only"
+    id="createUserModal"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <form
+        id="createUserForm"
+        method="POST"
+        action="{{ url_for('main.create_user_post') }}"
+      >
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Create New User</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="createEmail" class="form-label">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                name="email"
+                id="createEmail"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="createPassword" class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                name="password"
+                id="createPassword"
+                required
+              />
+            </div>
+            <div class="mb-3">
+              <label for="createRole" class="form-label">Role</label>
+              <select class="form-select" name="role" id="createRole" required>
+                <option value="SRE">SRE</option>
+                <option value="Manager">Manager</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+            <fieldset class="mb-3">
+              <legend class="form-label">File Access Level</legend>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="basic"
+                  id="permBasic"
+                />
+                <label class="form-check-label" for="permBasic">Basic</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="view"
+                  id="permView"
+                />
+                <label class="form-check-label" for="permView">View</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="write"
+                  id="permWrite"
+                />
+                <label class="form-check-label" for="permWrite">Write</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="none"
+                  id="permNone"
+                  checked
+                />
+                <label class="form-check-label" for="permNone">No Access</label>
+              </div>
+            </fieldset>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Create</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="editUserForm" method="POST">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Edit User</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editRole" class="form-label">Role</label>
+              <select name="role" id="editRole" class="form-select" required>
+                <option value="SRE">SRE</option>
+                <option value="Manager">Manager</option>
+                <option value="ADMIN">ADMIN</option>
+              </select>
+            </div>
+            <div class="form-check">
+              <input
+                class="form-check-input"
+                type="checkbox"
+                name="is_active"
+                id="editIsActive"
+              />
+              <label class="form-check-label" for="editIsActive">Active</label>
+            </div>
+            <fieldset class="mb-3 mt-3">
+              <legend class="form-label">File Access Level</legend>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="basic"
+                  id="editPermBasic"
+                />
+                <label class="form-check-label" for="editPermBasic"
+                  >Basic</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="view"
+                  id="editPermView"
+                />
+                <label class="form-check-label" for="editPermView">View</label>
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="write"
+                  id="editPermWrite"
+                />
+                <label class="form-check-label" for="editPermWrite"
+                  >Write</label
+                >
+              </div>
+              <div class="form-check">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="file_permission"
+                  value="none"
+                  id="editPermNone"
+                />
+                <label class="form-check-label" for="editPermNone"
+                  >No Access</label
+                >
+              </div>
+            </fieldset>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" type="submit">Save Changes</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div
+    class="modal fade"
+    id="resetPasswordModal"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <form id="resetPasswordForm" method="POST">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Reset Password</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input
+                type="password"
+                name="new_password"
+                id="newPassword"
+                class="form-control"
+                required
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-info" type="submit">Reset Password</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JS Filters and Role Visibility -->
+  <script>
+    
+
+    filterInput.addEventListener("input", applyFilters);
+    roleFilter.addEventListener("change", applyFilters);
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const role = document.body.dataset.role || "";
+      if (role.toUpperCase() !== "ADMIN") {
+        document.querySelectorAll(".admin-only").forEach((el) => {
+          el.style.display = "none";
+        });
+      }
+    });
+
+    function openEditModal(btn) {
+      const row = btn.closest("tr");
+      const userId = row.dataset.id;
+      const role = row.dataset.role;
+      const isActive = row.dataset.active === "true";
+      const filePerm = row.dataset.permission || "none";
+
+      const form = document.getElementById("editUserForm");
+      form.action = `/${userId}/edit`;
+      document.getElementById("editRole").value = role;
+      document.getElementById("editIsActive").checked = isActive;
+
+      // Pre-check the correct file_permission radio
+      document
+        .querySelectorAll('input[name="file_permission"]')
+        .forEach((radio) => {
+          radio.checked = radio.value === filePerm;
+        });
+
+      new bootstrap.Modal(document.getElementById("editUserModal")).show();
+    }
+
+    function openResetModal(btn) {
+      const row = btn.closest("tr");
+      const userId = row.dataset.id;
+      const form = document.getElementById("resetPasswordForm");
+      form.action = `/${userId}/reset_password`;
+      new bootstrap.Modal(document.getElementById("resetPasswordModal")).show();
+    }
+  </script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      setTimeout(function () {
+        document.querySelectorAll(".alert").forEach(function (alert) {
+          // Bootstrap 5 way (proper dismissal with animation)
+          const bsAlert = new bootstrap.Alert(alert);
+          bsAlert.close();
+        });
+      }, 1000); // 1 second
+    });
+  </script>
+</body>
+{% endblock %} flashed

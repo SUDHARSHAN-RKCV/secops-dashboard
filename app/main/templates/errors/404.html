@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>404 • Lost in Space</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --blue: #0e0620;
+        --white: #fff;
+        --green: #2ccf6d;
+        --bg: #05060a;
+      }
+
+      /* Page base */
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        margin: 0;
+        background: radial-gradient(
+          1000px 600px at 20% 10%,
+          #0b0f1a 0%,
+          #05060a 60%,
+          #05060a 100%
+        );
+        color: var(--blue);
+        font-family: "Nunito Sans", system-ui, -apple-system, Segoe UI, Roboto,
+          Arial, sans-serif;
+      }
+
+      /* Tiny star speckles */
+      .stars:before,
+      .stars:after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-repeat: repeat;
+        opacity: 0.25;
+      }
+      .stars:before {
+        background-image: radial-gradient(#ffffff 1px, transparent 1.5px);
+        background-size: 3px 3px;
+      }
+      .stars:after {
+        background-image: radial-gradient(#c9d6ff 0.7px, transparent 1.5px);
+        background-size: 2px 2px;
+        animation: drift 120s linear infinite;
+      }
+      @keyframes drift {
+        from {
+          transform: translate3d(0, 0, 0);
+        }
+        to {
+          transform: translate3d(-2000px, 800px, 0);
+        }
+      }
+
+      /* Layout */
+      .wrapper {
+        min-height: 100svh; /* mobile-safe viewport height */
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(24px, 4vw, 48px);
+        align-items: center;
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: clamp(16px, 4vw, 48px);
+      }
+      .left,
+      .right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .left svg {
+        width: 100%;
+        max-width: 560px;
+        height: auto;
+        display: block;
+      }
+
+      /* Copy */
+      h1 {
+        font-size: clamp(64px, 10vw, 120px);
+        line-height: 0.9;
+        margin: 0 0 0.1em;
+        font-weight: 800;
+        color: var(--white);
+        text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+      }
+      h2 {
+        font-size: clamp(20px, 3.2vw, 32px);
+        margin: 0 0 0.5em;
+        font-weight: 800;
+        color: var(--white);
+        letter-spacing: 0.5px;
+      }
+      p {
+        color: #c7c9d1;
+        font-size: clamp(16px, 2.2vw, 18px);
+        margin: 0 0 1.25em;
+      }
+
+      /* Button */
+      .btn {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--blue);
+        font-weight: 800;
+        letter-spacing: 1px;
+        border-radius: 999px;
+        padding: 12px 32px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        outline: none;
+        border: 4px solid var(--green);
+        transition: transform 0.15s ease;
+        will-change: transform;
+      }
+      .btn:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        width: 0%;
+        background: var(--green);
+        z-index: -1;
+        transition: width 0.22s ease;
+      }
+      .btn:hover {
+        transform: translateY(-1px);
+        color: var(--white);
+      }
+      .btn:hover:before {
+        width: 100%;
+      }
+
+      /* Astronaut gentle float */
+      #spaceman {
+        animation: float 3.2s ease-in-out infinite;
+        transform-origin: 50% 50%;
+      }
+      @keyframes float {
+        0% {
+          transform: translateY(0) rotate(0.2deg);
+        }
+        50% {
+          transform: translateY(-8px) rotate(-0.2deg);
+        }
+        100% {
+          transform: translateY(0) rotate(0.2deg);
+        }
+      }
+      #planet {
+        animation: wobble 4s ease-in-out infinite;
+        transform-origin: 50% 50%;
+      }
+      @keyframes wobble {
+        0%,
+        100% {
+          transform: rotate(0deg);
+        }
+        50% {
+          transform: rotate(-2deg);
+        }
+      }
+
+      /* Mobile stack */
+      @media (max-width: 900px) {
+        .wrapper {
+          grid-template-columns: 1fr;
+          text-align: center;
+        }
+        .right {
+          order: 2;
+        }
+        .left {
+          order: 1;
+        }
+      }
+
+      /* Respect reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        .stars:after,
+        #spaceman,
+        #planet {
+          animation: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="stars">
+    <main class="wrapper">
+      <!-- LEFT: Astronaut SVG (inline so it never 404s) -->
+      <section class="left" aria-hidden="true">
+        <!-- Your original astronaut/planet artwork (trimmed to essentials, animation via CSS) -->
+        <svg
+          viewBox="0 0 800 600"
+          role="img"
+          aria-label="Astronaut floating in space"
+        >
+          <g id="planet">
+            <circle
+              fill="none"
+              stroke="#0E0620"
+              stroke-width="3"
+              cx="572.859"
+              cy="108.803"
+              r="90.788"
+            />
+            <circle
+              fill="none"
+              stroke="#0E0620"
+              stroke-width="3"
+              cx="548.891"
+              cy="62.319"
+              r="13.074"
+            />
+            <circle
+              fill="none"
+              stroke="#0E0620"
+              stroke-width="3"
+              cx="591.743"
+              cy="158.918"
+              r="7.989"
+            />
+            <path
+              fill="none"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              d="M476.562,101.461c-30.404,2.164-49.691,4.221-49.691,8.007c0,6.853,63.166,12.408,141.085,12.408s141.085-5.555,141.085-12.408
+               c0-3.378-15.347-4.988-40.243-7.225"
+            />
+          </g>
+
+          <g id="spaceman">
+            <!-- Backpack -->
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M338.164,454.689l-64.726-17.353c-11.086-2.972-17.664-14.369-14.692-25.455l15.694-58.537
+               c3.889-14.504,18.799-23.11,33.303-19.221l52.349,14.035c14.504,3.889,23.11,18.799,19.221,33.303l-15.694,58.537
+               C360.647,451.083,349.251,457.661,338.164,454.689z"
+            />
+            <!-- Body -->
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M353.351,365.387c-7.948,1.263-16.249,0.929-24.48-1.278c-8.232-2.207-15.586-6.07-21.836-11.14
+               c-17.004,4.207-31.269,17.289-36.128,35.411l-1.374,5.123c-7.112,26.525,8.617,53.791,35.13,60.899l0,0
+               c26.513,7.108,53.771-8.632,60.883-35.158l1.374-5.123C371.778,395.999,365.971,377.536,353.351,365.387z"
+            />
+            <!-- Head / Helmet -->
+            <ellipse
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              transform="matrix(0.259 -0.9659 0.9659 0.259 -51.5445 563.2371)"
+              cx="341.295"
+              cy="315.211"
+              rx="61.961"
+              ry="60.305"
+            />
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M380.857,346.164c-1.247,4.651-4.668,8.421-9.196,10.06c-9.332,3.377-26.2,7.817-42.301,3.5
+               s-28.485-16.599-34.877-24.192c-3.101-3.684-4.177-8.66-2.93-13.311l7.453-27.798c0.756-2.82,3.181-4.868,6.088-5.13
+               c6.755-0.61,20.546-0.608,41.785,5.087s33.181,12.591,38.725,16.498c2.387,1.682,3.461,4.668,2.705,7.488L380.857,346.164z"
+            />
+            <!-- Arms (simplified) -->
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M360.633,363.039c1.352,1.061,4.91,5.056,5.824,6.634l27.874,47.634c3.855,6.649,1.59,15.164-5.059,19.02
+               c-6.649,3.855-15.164,1.59-19.02-5.059l-5.603-9.663"
+            />
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M301.301,347.66c-1.702,0.242-5.91,1.627-7.492,2.536l-47.965,27.301c-6.664,3.829-8.963,12.335-5.134,18.999
+               c3.829,6.664,12.335,8.963,18.999,5.134l9.685-5.564"
+            />
+            <!-- Legs (simplified) -->
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M312.957,456.734l-14.315,53.395c-1.896,7.07,2.299,14.338,9.37,16.234c7.07,1.896,14.338-2.299,16.234-9.37l17.838-66.534
+               C333.451,455.886,323.526,457.387,312.957,456.734z"
+            />
+            <path
+              fill="#FFFFFF"
+              stroke="#0E0620"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M296.315,452.273L282,505.667c-1.896,7.07-9.164,11.265-16.234,9.37c-7.07-1.896-11.265-9.164-9.37-16.234l17.838-66.534
+               C278.993,441.286,286.836,447.55,296.315,452.273z"
+            />
+          </g>
+        </svg>
+      </section>
+
+      <!-- RIGHT: Text + Button -->
+      <section class="right">
+        <div>
+          <h1>404</h1>
+          <h2>Lost in Space</h2>
+          <p>
+            The page you’re looking for doesn’t exist. But hey, at least the
+            view is stellar.
+          </p>
+          <button class="btn" id="goBackBtn">GO BACK</button>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Go Back with safe fallback to "/"
+      document
+        .getElementById("goBackBtn")
+        .addEventListener("click", function () {
+          if (history.length > 1) {
+            history.back();
+          } else {
+            window.location.href = "/";
+          }
+        });
+    </script>
+  </body>
+</html>

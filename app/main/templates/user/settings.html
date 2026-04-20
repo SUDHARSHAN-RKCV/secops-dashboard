@@ -1,0 +1,19 @@
+{% extends "base.html" %} {% block content %}
+<div class="settings-page">
+  <h2>User Settings</h2>
+  <p>{{ current_user.email }}</p>
+
+  <form method="POST" action="/user/settings">
+    <!-- Sample settings form -->
+
+    <label for="theme">Theme Preference:</label>
+    <select id="theme" name="theme">
+      <option value="light" {% if current_user.theme == 'light' %}selected{% endif %}>Light</option>
+      <option value="dark" {% if current_user.theme == 'dark' %}selected{% endif %}>Dark</option>
+      <option value="system" {% if current_user.theme == 'system' %}selected{% endif %}>System</option>
+    </select>
+
+    <button type="submit">Save Changes</button>
+  </form>
+</div>
+{% endblock %}

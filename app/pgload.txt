@@ -1,0 +1,3 @@
+python .\pg_export_import.py --mode export
+
+python .\pg_export_import.py --mode import

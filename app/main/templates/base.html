@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{ app_name }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#947dca" />
+
+    <!-- Bootstrap & FontAwesome -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <!-- GitHub Markdown (changelog) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.1.0/github-markdown-light.min.css"
+    />
+    <!-- Custom styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='logos/scipher.png') }}"
+    />
+
+    <style>
+      /* ── Design tokens ──────────────────────────────────────────────── */
+      :root {
+        --accent: #a88ee0;
+        --accent-dark: #7c55d8;
+        --sidebar-bg: #292961b0;
+        --header-bg: #292961b0;
+        --nav-hover: rgba(255, 255, 255, 0.08);
+        --nav-active-bg: rgba(255, 255, 255, 0.15);
+        --card-bg: #2a3d2786;
+        --text-primary: #f8f9fa;
+        --text-muted: #d6d6f5;
+        --scrollbar-thumb: rgba(120, 120, 180, 0.6);
+        --scrollbar-track: rgba(0, 0, 0, 0.1);
+        --radius: 12px;
+        --shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        --transition: 0.25s ease;
+      }
+
+      [data-theme="light"] {
+        --bg-color: #7c55d8;
+      }
+      [data-theme="dark"] {
+        --bg-color: #947dca;
+      }
+
+      /* ── Base ───────────────────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: var(--bg-color, #947dca);
+        color: var(--text-primary);
+        /* Body itself must NOT scroll — only .main scrolls */
+        overflow: hidden;
+        height: 100vh;
+      }
+
+      /* ── Layout shell ───────────────────────────────────────────────── */
+      .layout {
+        display: flex;
+        height: 100vh;
+        padding: 10px;
+        gap: 10px;
+        overflow: hidden; /* clips sidebar + content to viewport */
+      }
+
+      .content-column {
+        flex: 1;
+        min-width: 0; /* prevents flex blowout on narrow screens */
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        overflow: hidden; /* header + footer stay pinned; only .main scrolls */
+        height: 100vh;
+      }
+
+      /* The ONE scroll container for page content */
+      .main {
+        flex: 1;
+        min-height: 0; /* critical: lets flex child shrink below content size */
+        overflow-y: auto;
+        overflow-x: hidden;
+        border-radius: 0 0 var(--radius) var(--radius);
+        background-color: var(--card-bg);
+        padding: 0 10px 16px;
+        box-shadow: var(--shadow);
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+      }
+
+      .main::-webkit-scrollbar {
+        width: 6px;
+      }
+      .main::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 6px;
+      }
+      .main::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+      }
+
+      /* ── Sidebar ────────────────────────────────────────────────────── */
+      .sidebar {
+        width: 250px;
+        background-color: var(--sidebar-bg);
+        color: var(--text-muted);
+        padding: 1em;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        transition: width var(--transition);
+        overflow-x: hidden; /* clips text horizontally when collapsed */
+        overflow-y: visible; /* must NOT be hidden — lets .nav-links scroll */
+        height: calc(100vh - 20px); /* 20px = top+bottom padding of .layout */
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+
+      /* Nav links area scrolls when there are too many items */
+      .nav-links {
+        overflow-y: auto;
+        overflow-x: hidden;
+        flex: 1; /* fills space between toggle btn and user footer */
+        min-height: 0; /* critical — allows flex child to shrink & scroll */
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) transparent;
+      }
+
+      .nav-links::-webkit-scrollbar {
+        width: 4px;
+      }
+      .nav-links::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 4px;
+      }
+      .nav-links::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      .sidebar.collapsed {
+        width: 65px;
+      } /* tight fit around icons */
+      .sidebar.collapsed .link-text {
+        display: none;
+      }
+
+      #toggleBtn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 1.5em;
+        cursor: pointer;
+        margin-bottom: 1em;
+        padding: 0;
+        line-height: 1;
+      }
+
+      /* ── Navigation links ───────────────────────────────────────────── */
+
+      .nav-links a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-muted);
+        text-decoration: none;
+        margin: 6px 0;
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+        border-radius: 8px;
+        transition:
+          background var(--transition),
+          color var(--transition);
+        position: relative;
+        white-space: nowrap;
+      }
+
+      .nav-links a i {
+        min-width: 20px;
+        text-align: center;
+      }
+
+      .nav-links a:hover {
+        background-color: var(--nav-hover);
+        color: #fff;
+      }
+
+      .nav-links a.active {
+        background-color: var(--nav-active-bg);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      /* Active left-border indicator */
+      .nav-links a.active::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background-color: var(--accent);
+        border-radius: 4px;
+      }
+
+      .dropdown-nav .collapse a {
+        font-size: 0.9rem;
+        padding-left: 1.5rem;
+        display: flex;
+        align-items: center;
+      }
+
+      /* ── Header / Footer islands ────────────────────────────────────── */
+      .header-island,
+      .footer-island {
+        position: sticky;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background-color: var(--header-bg);
+        color: var(--text-primary);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .header-island {
+        top: 0;
+      }
+      .footer-island {
+        bottom: 0;
+        margin-bottom: 15px;
+      }
+
+      .footer-link {
+        text-decoration: none;
+        color: #fff;
+        font-size: 0.85rem;
+      }
+      .footer-link:hover {
+        color: rgb(134, 150, 238);
+        text-decoration: underline;
+      }
+
+      /* ── Live clock ─────────────────────────────────────────────────── */
+      #liveClock {
+        font-family: monospace;
+        font-weight: bold;
+        font-size: 0.95rem;
+      }
+
+      /* ── User footer (bottom of sidebar) ────────────────────────────── */
+      .user-footer {
+        margin-top: auto;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 1em;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-muted);
+        font-size: 0.9em;
+        margin-bottom: 0.5em;
+      }
+
+      .user-info i {
+        font-size: 1.5em;
+      }
+
+      .user-meta {
+        display: flex;
+        flex-direction: column;
+        font-size: 0.85em;
+      }
+
+      .settings-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.9em;
+        padding: 0.3em 0;
+        transition: color var(--transition);
+      }
+      .settings-link:hover {
+        color: #fff;
+      }
+
+      /* ── Notifications offcanvas ────────────────────────────────────── */
+      .glass-panel {
+        background: rgba(46, 42, 77, 0.88);
+        backdrop-filter: blur(10px);
+        color: var(--text-primary);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .notif-msg {
+        background-color: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+        transition: background var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .notif-msg:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      .position-relative .badge {
+        font-size: 0.65rem;
+        padding: 0.35em 0.5em;
+      }
+
+      /* ── Markdown overrides ─────────────────────────────────────────── */
+      .markdown-body h1,
+      .markdown-body h2 {
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      .markdown-body ul {
+        margin-bottom: 0.5rem;
+      }
+      .markdown-body p {
+        margin: 0.5rem 0;
+      }
+      .markdown-body {
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      /* ── Utilities ──────────────────────────────────────────────────── */
+      .card-shadow {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+      }
+      .rounded-12 {
+        border-radius: 12px;
+      }
+
+      /* ── Responsive ─────────────────────────────────────────────────── */
+      @media (max-width: 768px) {
+        /* Mobile: same locked-scroll model as desktop, but stacked vertically */
+        html,
+        body {
+          height: 100% !important;
+          overflow: hidden !important;
+        }
+
+        .layout {
+          flex-direction: column;
+          height: 100vh;
+          overflow: hidden;
+          align-items: stretch;
+        }
+
+        .content-column {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+          width: 100%;
+        }
+
+        /* .main is the ONLY scroll container — fills space between header and footer */
+        .main {
+          flex: 1;
+          min-height: 0;
+          overflow-y: auto;
+          overflow-x: hidden;
+          max-height: none;
+        }
+
+        /* ── Sidebar becomes a sticky top nav bar ── */
+        .sidebar {
+          width: 100% !important;
+          height: auto !important;
+          overflow: visible !important;
+          flex-direction: row;
+          justify-content: space-around;
+          align-items: center;
+          border-radius: var(--radius) var(--radius) 0 0;
+          padding: 0.4em 0.5em;
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+          width: 100% !important;
+        }
+
+        /* Hide user info — no room in horizontal nav */
+        .sidebar .user-footer {
+          display: none;
+        }
+
+        .nav-links {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-items: center;
+          gap: 4px;
+          justify-content: space-around;
+          overflow: visible;
+          flex: 1;
+          min-height: 0;
+        }
+
+        .nav-links a {
+          flex-direction: column;
+          align-items: center;
+          font-size: 0.8em;
+          margin: 0;
+          padding: 0.4em 0.5em;
+          white-space: nowrap;
+        }
+
+        /* Hide chevron — dropdown opens as absolute panel below the nav bar */
+        .nav-links .fa-chevron-down {
+          display: none;
+        }
+
+        /* Admin submenu: drops down below the sticky nav bar */
+        .dropdown-nav {
+          position: relative;
+        }
+
+        .dropdown-nav .collapse {
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background-color: var(--sidebar-bg);
+          border-radius: 0 0 var(--radius) var(--radius);
+          box-shadow: var(--shadow);
+          padding: 0.5em;
+          z-index: 1001;
+          min-width: 180px;
+        }
+
+        .dropdown-nav .collapse a {
+          white-space: nowrap;
+          padding: 0.5em 0.75em;
+        }
+
+        .sidebar .link-text {
+          display: block;
+          font-size: 0.7em;
+        }
+
+        #toggleBtn {
+          display: none;
+        }
+
+        /* ── Footer: always pinned to bottom of viewport on mobile ── */
+        .footer-island {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          margin-bottom: 0;
+          border-radius: 0;
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+          z-index: 998;
+          padding: 10px 16px;
+        }
+
+        /* padding-bottom not needed — .main scroll container handles its own overflow */
+
+        .header-island {
+          flex-direction: column;
+          gap: 5px;
+          text-align: center;
+          position: static; /* not sticky — flows naturally below nav */
+        }
+
+        /* Remove layout padding on mobile — nav is flush edge-to-edge */
+        .layout {
+          padding: 0;
+        }
+
+        /* Remove content-column padding too */
+        .content-column {
+          padding: 0;
+        }
+
+        /* Give main a little breathing room */
+        .main {
+          padding: 10px;
+        }
+
+        .user-footer {
+          flex-direction: row;
+          justify-content: space-between;
+          width: 100%;
+          margin-top: 10px;
+        }
+
+        .user-info {
+          flex-direction: column;
+          align-items: center;
+          gap: 5px;
+          font-size: 0.75em;
+        }
+
+        .settings-link {
+          font-size: 0.75em;
+          padding: 0;
+        }
+      }
+    </style>
+
+    <!-- Theme initialisation (runs before first paint to avoid flash) -->
+    <script>
+      (function () {
+        var theme =
+          "{{ current_user.theme if current_user.is_authenticated else 'system' }}";
+        var resolved =
+          theme === "system"
+            ? window.matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : theme;
+        document.documentElement.setAttribute("data-theme", resolved);
+      })();
+    </script>
+  </head>
+
+  <body data-auth="{{ current_user.is_authenticated | lower }}">
+    <div class="layout">
+      <!-- ── Sidebar ──────────────────────────────────────────────────── -->
+      <aside
+        class="sidebar collapsed"
+        id="sidebar"
+        aria-label="Main navigation"
+      >
+        <button
+          id="toggleBtn"
+          aria-label="Toggle sidebar"
+          aria-expanded="false"
+          aria-controls="sidebar"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <nav class="nav-links">
+          <a
+            href="{{ url_for('main.home') }}"
+            class="{{ 'active' if active_page == 'home' }}"
+          >
+            <i class="fas fa-home" aria-hidden="true"></i>
+            <span class="link-text">Home</span>
+          </a>
+
+          <a
+            href="{{ url_for('main.tools') }}"
+            class="{{ 'active' if active_page == 'tools' }}"
+          >
+            <i class="fas fa-tools" aria-hidden="true"></i>
+            <span class="link-text">Tools</span>
+          </a>
+
+          <a
+            href="{{ url_for('main.dashboard') }}"
+            class="{{ 'active' if active_page == 'dashboard' }}"
+          >
+            <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+            <span class="link-text">Dashboard</span>
+          </a>
+
+          {% if current_user.is_authenticated %}
+          <a
+            href="{{ url_for('main.reports') }}"
+            class="{{ 'active' if active_page == 'reports' }}"
+          >
+            <i class="fas fa-chart-line" aria-hidden="true"></i>
+            <span class="link-text">Reports</span>
+          </a>
+          {% endif %} {% if current_user.is_authenticated and current_user.role
+          | lower == 'admin' %}
+          <div class="dropdown-nav">
+            <a
+              href="#"
+              class="{{ 'active' if active_page in ['admin', 'UM'] }}"
+              data-bs-toggle="collapse"
+              data-bs-target="#adminMenu"
+              aria-expanded="{{ 'true' if active_page in ['admin', 'UM'] else 'false' }}"
+              aria-controls="adminMenu"
+            >
+              <i class="fas fa-cogs" aria-hidden="true"></i>
+              <span class="link-text">Admin</span>
+              <i class="fas fa-chevron-down ms-auto" aria-hidden="true"></i>
+            </a>
+            <div
+              id="adminMenu"
+              class="collapse {{ 'show' if active_page in ['admin', 'UM'] }} ps-3"
+            >
+              <a
+                href="{{ url_for('main.user_management') }}"
+                class="{{ 'active' if active_page == 'UM' }} d-block mt-2"
+              >
+                <i class="fas fa-users-cog me-2" aria-hidden="true"></i>
+                <span class="link-text">User Management</span>
+              </a>
+            </div>
+          </div>
+          {% endif %} {% if not current_user.is_authenticated %}
+          <a
+            href="{{ url_for('main.login') }}"
+            class="{{ 'active' if active_page == 'login' }}"
+          >
+            <i class="fas fa-sign-in-alt" aria-hidden="true"></i>
+            <span class="link-text">Login</span>
+          </a>
+          {% else %}
+          <a href="{{ url_for('main.logout') }}">
+            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+            <span class="link-text">Logout</span>
+          </a>
+          {% endif %}
+        </nav>
+
+        {% if current_user.is_authenticated %}
+        <div class="user-footer">
+          <div class="user-info">
+            <i class="fas fa-user-circle" aria-hidden="true"></i>
+            <div class="user-meta">
+              <span class="link-text">{{ current_user.email }}</span>
+              <span class="link-text fw-semibold"
+                >{{ current_user.role | upper }}</span
+              >
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </aside>
+
+      <!-- ── Content column ───────────────────────────────────────────── -->
+      <div class="content-column">
+        <!-- Sticky header -->
+        <header class="header-island">
+          <div aria-hidden="true"><i class="fas fa-shield-alt"></i></div>
+          <div class="text-center flex-grow-1 fw-semibold">{{ app_name }}</div>
+          <div class="d-flex align-items-center gap-2">
+            <span id="liveClock" aria-live="polite" aria-label="Current time"
+              >--:--:--</span
+            >
+            {% if current_user.is_authenticated %}
+            <button
+              class="btn btn-link p-0 text-light border-0 position-relative"
+              data-bs-toggle="offcanvas"
+              data-bs-target="#notificationPanel"
+              aria-label="Open notifications ({{ notifications | length }} unread)"
+            >
+              <i class="fas fa-bell ms-2" aria-hidden="true"></i>
+              {% if notifications | length > 0 %}
+              <span
+                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              >
+                {{ notifications | length }}
+                <span class="visually-hidden">unread notifications</span>
+              </span>
+              {% endif %}
+            </button>
+            {% endif %}
+          </div>
+        </header>
+
+        <!-- Page content -->
+        <main class="main">{% block content %}{% endblock %}</main>
+
+        <!-- Sticky footer -->
+        <footer class="footer-island position-relative">
+          <div class="footer-center text-center mx-auto">
+            <small class="text-light opacity-75 d-block">
+              This application is designed & maintained by Scipher Operations, Bangalore
+            </small>
+            {% if current_user.is_authenticated %}
+            <a
+              href="{{ url_for('main.changelog') }}"
+              class="footer-link fw-semibold d-block"
+            >
+              Version {{ app_version }}
+            </a>
+            {% else %}
+            <span class="text-light opacity-75 d-block"
+              >Version {{ app_version }}</span
+            >
+            {% endif %}
+          </div>
+          <div class="footer-right">
+            {% if current_user.is_authenticated %}
+            <a
+              class="btn btn-sm btn-outline-light"
+              href="/cdn-cgi/l/email-protection#53282873202623233c21270c363e323a3f732e2e"
+            >
+              <i class="fas fa-life-ring me-1" aria-hidden="true"></i> Contact
+              Support
+            </a>
+            {% else %}
+            <span
+              class="btn btn-sm btn-outline-light disabled"
+              aria-disabled="true"
+            >
+              <i class="fas fa-life-ring me-1" aria-hidden="true"></i> Contact
+              Support
+            </span>
+            {% endif %}
+          </div>
+        </footer>
+      </div>
+      <!-- /.content-column -->
+    </div>
+    <!-- /.layout -->
+
+    <!-- ── Notification offcanvas ──────────────────────────────────────── -->
+    <div
+      class="offcanvas offcanvas-end glass-panel"
+      tabindex="-1"
+      id="notificationPanel"
+      aria-labelledby="notificationPanelLabel"
+    >
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="notificationPanelLabel">
+          <i class="fas fa-bell me-2" aria-hidden="true"></i>Notifications
+        </h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body">
+        {% if notifications %} {% for note in notifications %}
+        <a
+          href="{{ note.link }}"
+          class="notif-msg d-block text-decoration-none text-light"
+        >
+          {{ note.message }}
+        </a>
+        {% endfor %} {% else %}
+        <div class="notif-msg text-center text-muted">No new notifications</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Scripts ──────────────────────────────────────────────────────── -->
+    <script
+      data-cfasync="false"
+      src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // ── Sidebar toggle ──────────────────────────────────────────────
+      (function () {
+        const btn = document.getElementById("toggleBtn");
+        const sidebar = document.getElementById("sidebar");
+        if (!btn || !sidebar) return;
+
+        btn.addEventListener("click", () => {
+          const isCollapsed = sidebar.classList.toggle("collapsed");
+          btn.setAttribute("aria-expanded", String(!isCollapsed));
+
+          // Close any open dropdown menus when collapsing
+          if (isCollapsed) {
+            sidebar.querySelectorAll(".collapse.show").forEach((el) => {
+              bootstrap.Collapse.getOrCreateInstance(el).hide();
+            });
+          }
+        });
+      })();
+
+      // ── Live clock — uses the browser's own locale & timezone ────────
+      (function () {
+        const el = document.getElementById("liveClock");
+        if (!el) return;
+
+        // Resolve the user's IANA timezone (e.g. "Asia/Kolkata", "America/New_York")
+        const userTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const userLocale = navigator.language || "en-GB";
+
+        // Short timezone abbreviation, e.g. "IST", "EST", "CET"
+        const tzAbbr =
+          new Intl.DateTimeFormat(userLocale, {
+            timeZoneName: "short",
+            timeZone: userTZ,
+          })
+            .formatToParts(new Date())
+            .find((p) => p.type === "timeZoneName")?.value || "";
+
+        function tick() {
+          const now = new Date();
+          const date = now.toLocaleDateString(userLocale, {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+          });
+          const time = now.toLocaleTimeString(userLocale, {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
+          el.textContent = date + "  " + time + "  " + tzAbbr;
+        }
+        tick();
+        setInterval(tick, 1000);
+      })();
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

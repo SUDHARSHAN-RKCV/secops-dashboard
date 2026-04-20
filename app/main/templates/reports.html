@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block title %}Reports & Documents - Scipher Gx {% endblock %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Reports</h2>
+    {% if Reports %}
+      {% for links in Reports %}
+        <ul class="list-group">
+          <li class="list-group-item">
+          <a href="{{ links.url }}"target="_blank">
+            <i class="fa-solid fa-folder-tree"></i>  {{ links.title }}</a
+          >
+        </li>
+        </ul>
+        <br>
+      {% endfor %}
+    {% else %}
+  <div class="alert alert-warning">No reports are currently configured.</div>
+  {% endif %}
+  </div>
+{% endblock %}

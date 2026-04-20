@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>400 - Bad Request</title>
+    <style>
+      body {
+        background: black;
+        color: white;
+        text-align: center;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      h1 {
+        font-size: 3em;
+        margin-bottom: 0.3em;
+      }
+      p {
+        font-size: 1.2em;
+        margin-bottom: 1em;
+      }
+      button {
+        background-color: #ff6347;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        color: white;
+        font-size: 1em;
+        cursor: pointer;
+      }
+      img {
+        margin-top: 20px;
+        width: 250px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>400 - Bad Request</h1>
+    <p>Looks like your spaceship navigation went wrong!</p>
+    <button onclick="history.back()">Go Back</button>
+    <img src="/static/logos/astronaut_400.png" alt="Astronaut" />
+  </body>
+</html>
